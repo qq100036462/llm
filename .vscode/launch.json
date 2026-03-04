@@ -9,7 +9,17 @@
             "projectName": "",
             "console": "integratedTerminal",
             "args": "",
-            "vmArgs": "-Dspring.profiles.active=dev"  // 可选：指定环境
+            "vmArgs": "-Dspring.profiles.active=dev"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-Application<springboot-demo>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.springbootdemo.Application",
+            "projectName": "springboot-demo",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
