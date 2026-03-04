@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot Demo",
+            "request": "launch",
+            "mainClass": "com.example.springbootdemo.Application",
+            "projectName": "",
+            "console": "integratedTerminal",
+            "args": "",
+            "vmArgs": "-Dspring.profiles.active=dev"  // 可选：指定环境
+        }
+    ]
+}
