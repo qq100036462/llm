@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "LangChain4jSpringBootApp",
+            "request": "launch",
+            "mainClass": "com.example.LangChain4jSpringBootApp",
+            "projectName": "langchain4j-demo"
+        },
+        {
+            "type": "java",
             "name": "Spring Boot Demo",
             "request": "launch",
             "mainClass": "com.example.springbootdemo.Application",
