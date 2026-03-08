@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: mcp-server
+  ai:
+    mcp:
+      server:
+        enabled: true
+        protocol: STATELESS
+        name: stateless-mcp-server
+        version: 1.0.0
+        type: ASYNC
+        instructions: "This stateless server is optimized for cloud deployments"
+        streamable-http:
+          mcp-endpoint: /api/mcp
+        capabilities:
+          tool: true
+          resource: true
+          prompt: true

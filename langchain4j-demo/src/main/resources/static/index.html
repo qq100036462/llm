@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangChain4j 聊天 Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .chat-container {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .chat-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .chat-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chat-button:hover {
+            background-color: #0056b3;
+        }
+        .chat-button.secondary {
+            background-color: #6c757d;
+        }
+        .chat-button.secondary:hover {
+            background-color: #5a6268;
+        }
+        .chat-response {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            min-height: 100px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>LangChain4j 聊天 Demo</h1>
+    <div class="chat-container">
+        <input type="text" id="userInput" class="chat-input" placeholder="请输入你的问题...">
+        <div class="chat-buttons">
+            <button onclick="sendMessage('/api/chat/stream')" class="chat-button">发送 (TokenStream)</button>
+            <button onclick="sendMessage('/api/chat/flux')" class="chat-button secondary">发送 (Flux)</button>
+        </div>
+        <div id="response" class="chat-response"></div>
+    </div>
+
+    <script>
+        function sendMessage(endpoint) {
+            const userInput = document.getElementById('userInput').value;
+            const responseDiv = document.getElementById('response');
+            
+            if (!userInput.trim()) {
+                responseDiv.innerHTML = '<p class="error">请输入问题</p>';
+                return;
+            }
+            
+            responseDiv.innerHTML = '<p>正在回复...</p>';
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: userInput
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                let fullResponse = '';
+                let buffer = '';
+                
+                function readStream() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) {
+                            responseDiv.innerHTML = '<p>' + fullResponse + '</p>';
+                            return;
+                        }
+                        
+                        buffer += decoder.decode(value, { stream: true });
+                        
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data:')) {
+                                const data = line.substring(5).trim();
+                                if (data) {
+                                    fullResponse += data;
+                                }
+                            }
+                        }
+                        
+                        responseDiv.innerHTML = '<p>' + fullResponse + '</p>';
+                        
+                        readStream();
+                    }).catch(error => {
+                        responseDiv.innerHTML = '<p class="error">错误: ' + error.message + '</p>';
+                    });
+                }
+                
+                readStream();
+            })
+            .catch(error => {
+                responseDiv.innerHTML = '<p class="error">错误: ' + error.message + '</p>';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,12 +1,25 @@
 server:
   port: 8080
 
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+
 langchain4j:
-  chat-model:
-    provider: open-ai
-    open-ai:
-      base-url: https://api.deepseek.com
+  open-ai:
+    chat-model:
       api-key: sk-64a2c78c9be846dd9bbd3a1ebd89678d
       model-name: deepseek-chat
+      base-url: https://api.deepseek.com
+      log-requests: true
+      log-responses: true
+    streaming-chat-model:
+      api-key: sk-64a2c78c9be846dd9bbd3a1ebd89678d
+      model-name: deepseek-chat
+      base-url: https://api.deepseek.com
       log-requests: true
       log-responses: true

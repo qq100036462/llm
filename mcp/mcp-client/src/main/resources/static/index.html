@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Client API 测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .api-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .api-info code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .method {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+        .method.get { background: #28a745; color: white; }
+        .method.post { background: #007bff; color: white; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .test-cases {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .test-case-btn {
+            padding: 8px 16px;
+            background: #e9ecef;
+            border: 2px solid #dee2e6;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        .test-case-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .test-case-btn.weather { border-left: 4px solid #ffc107; }
+        .test-case-btn.weather:hover { background: #ffc107; border-color: #ffc107; }
+        .test-case-btn.calculator { border-left: 4px solid #28a745; }
+        .test-case-btn.calculator:hover { background: #28a745; border-color: #28a745; }
+        .test-case-btn.database { border-left: 4px solid #17a2b8; }
+        .test-case-btn.database:hover { background: #17a2b8; border-color: #17a2b8; }
+        .test-case-btn.general { border-left: 4px solid #6c757d; }
+        .tool-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .tool-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .tool-section h3 span {
+            margin-right: 8px;
+        }
+        .tool-desc {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        .response-area {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            min-height: 150px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status {
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .mcp-tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .mcp-tool-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .mcp-tool-card.weather { border-left-color: #ffc107; }
+        .mcp-tool-card.calculator { border-left-color: #28a745; }
+        .mcp-tool-card.database { border-left-color: #17a2b8; }
+        .mcp-tool-card h4 {
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .mcp-tool-card p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .mcp-tool-card code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MCP Client API 测试页面</h1>
+        
+        <div class="card">
+            <h2>MCP 连接状态</h2>
+            <div class="api-info">
+                <p>工具数量：<span id="toolCount">-</span></p>
+                <p>工具列表：<code id="toolNames">-</code></p>
+                <button class="btn btn-primary" onclick="refreshTools()">刷新工具列表</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>MCP Server 工具说明</h2>
+            <p style="margin-bottom: 15px; color: #666;">MCP Server 提供以下工具，AI 可自动调用这些工具完成任务：</p>
+            
+            <div class="mcp-tools-grid">
+                <div class="mcp-tool-card weather">
+                    <h4>🌤️ weather - 天气查询</h4>
+                    <p>查询指定城市的天气信息，包括温度、湿度、天气状况等</p>
+                    <p><strong>参数：</strong><code>city</code> 城市名称（北京、上海、广州、深圳、杭州）</p>
+                </div>
+                <div class="mcp-tool-card calculator">
+                    <h4>🧮 calculator - 计算器</h4>
+                    <p>执行数学表达式计算，支持加减乘除、括号、幂运算</p>
+                    <p><strong>参数：</strong><code>expression</code> 数学表达式</p>
+                </div>
+                <div class="mcp-tool-card database">
+                    <h4>🗄️ database - 数据库查询</h4>
+                    <p>查询用户信息，包括姓名、邮箱、会员等级、账户余额</p>
+                    <p><strong>参数：</strong><code>userId</code> 用户ID（1001-1004）</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>API 接口说明</h2>
+            <div class="api-info">
+                <p><span class="method get">GET</span><code>/api/chat?message=xxx</code></p>
+                <p style="margin-top: 8px; color: #666;">GET 方式调用聊天接口，参数通过 URL 传递</p>
+            </div>
+            <div class="api-info">
+                <p><span class="method post">POST</span><code>/api/chat</code></p>
+                <p style="margin-top: 8px; color: #666;">POST 方式调用聊天接口，Body: <code>{"message": "xxx"}</code></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>MCP 工具测试用例</h2>
+            
+            <div class="tool-section">
+                <h3><span>🌤️</span>天气工具测试</h3>
+                <p class="tool-desc">测试 AI 调用 weather 工具查询城市天气</p>
+                <div class="test-cases">
+                    <button class="test-case-btn weather" onclick="fillTestCase('北京今天天气怎么样？')">北京天气</button>
+                    <button class="test-case-btn weather" onclick="fillTestCase('上海现在的天气如何？')">上海天气</button>
+                    <button class="test-case-btn weather" onclick="fillTestCase('帮我查一下广州的天气')">广州天气</button>
+                    <button class="test-case-btn weather" onclick="fillTestCase('深圳和杭州哪个城市天气更好？')">多城市对比</button>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h3><span>🧮</span>计算器工具测试</h3>
+                <p class="tool-desc">测试 AI 调用 calculator 工具执行数学计算</p>
+                <div class="test-cases">
+                    <button class="test-case-btn calculator" onclick="fillTestCase('帮我计算 123 + 456')">加法运算</button>
+                    <button class="test-case-btn calculator" onclick="fillTestCase('计算 (100 - 50) * 2')">复杂运算</button>
+                    <button class="test-case-btn calculator" onclick="fillTestCase('2的10次方是多少？')">幂运算</button>
+                    <button class="test-case-btn calculator" onclick="fillTestCase('计算 1234 / 56 + 78 * 9')">混合运算</button>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h3><span>🗄️</span>数据库工具测试</h3>
+                <p class="tool-desc">测试 AI 调用 database 工具查询用户信息</p>
+                <div class="test-cases">
+                    <button class="test-case-btn database" onclick="fillTestCase('查询用户ID为1001的用户信息')">查询1001</button>
+                    <button class="test-case-btn database" onclick="fillTestCase('帮我查一下用户1002的详细信息')">查询1002</button>
+                    <button class="test-case-btn database" onclick="fillTestCase('用户1003的账户余额是多少？')">查询余额</button>
+                    <button class="test-case-btn database" onclick="fillTestCase('查询所有VIP用户的信息')">VIP用户</button>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h3><span>💬</span>通用对话测试</h3>
+                <p class="tool-desc">测试 AI 基础对话能力</p>
+                <div class="test-cases">
+                    <button class="test-case-btn general" onclick="fillTestCase('你好')">你好</button>
+                    <button class="test-case-btn general" onclick="fillTestCase('用Python写一个冒泡排序')">代码生成</button>
+                    <button class="test-case-btn general" onclick="fillTestCase('解释一下什么是MCP协议')">概念解释</button>
+                    <button class="test-case-btn general" onclick="fillTestCase('给我讲个笑话')">讲笑话</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="message">输入消息：</label>
+                <textarea id="message" placeholder="请输入您的问题...">北京今天天气怎么样？</textarea>
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-primary" onclick="sendGet()">GET 请求</button>
+                <button class="btn btn-primary" onclick="sendPost()">POST 请求</button>
+                <button class="btn btn-secondary" onclick="clearResponse()">清空响应</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在请求中...</p>
+            </div>
+
+            <div class="form-group">
+                <label>响应结果：<span id="status" class="status" style="display:none;"></span></label>
+                <div class="response-area" id="response">等待请求...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>批量测试</h2>
+            <p style="margin-bottom: 15px; color: #666;">依次执行所有 MCP 工具测试用例，验证工具调用是否正常</p>
+            <button class="btn btn-primary" onclick="runAllTests()">运行全部测试</button>
+            <div class="response-area" id="batchResponse" style="margin-top: 15px;">等待测试...</div>
+        </div>
+    </div>
+
+    <script>
+        function fillTestCase(text) {
+            document.getElementById('message').value = text;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+        }
+
+        function showStatus(success, text) {
+            const status = document.getElementById('status');
+            status.style.display = 'inline';
+            status.className = 'status ' + (success ? 'success' : 'error');
+            status.textContent = text;
+        }
+
+        async function sendGet() {
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
+                alert('请输入消息');
+                return;
+            }
+
+            showLoading(true);
+            const responseArea = document.getElementById('response');
+            
+            try {
+                const response = await fetch(`/api/chat?message=${encodeURIComponent(message)}`);
+                const data = await response.json();
+                
+                responseArea.textContent = JSON.stringify(data, null, 2);
+                showStatus(response.ok, response.ok ? '成功' : '失败');
+            } catch (error) {
+                responseArea.textContent = '错误: ' + error.message;
+                showStatus(false, '请求失败');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function sendPost() {
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
+                alert('请输入消息');
+                return;
+            }
+
+            showLoading(true);
+            const responseArea = document.getElementById('response');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                
+                responseArea.textContent = JSON.stringify(data, null, 2);
+                showStatus(response.ok, response.ok ? '成功' : '失败');
+            } catch (error) {
+                responseArea.textContent = '错误: ' + error.message;
+                showStatus(false, '请求失败');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function clearResponse() {
+            document.getElementById('response').textContent = '等待请求...';
+            document.getElementById('status').style.display = 'none';
+        }
+
+        async function refreshTools() {
+            try {
+                const res = await fetch('http://localhost:8080/api/mcp/tools');
+                if (!res.ok) throw new Error('网络错误: ' + res.status);
+                const data = await res.json();
+                document.getElementById('toolCount').textContent = data.count;
+                document.getElementById('toolNames').textContent = (data.names && data.names.length) ? data.names.join(', ') : '-';
+                showStatus(true, '工具列表已刷新');
+            } catch (e) {
+                showStatus(false, '刷新失败: ' + e.message);
+            }
+        }
+
+        async function runAllTests() {
+            const testCases = [
+                { category: '天气工具', message: '北京今天天气怎么样？' },
+                { category: '天气工具', message: '上海现在的天气如何？' },
+                { category: '天气工具', message: '帮我查一下广州的天气' },
+                { category: '计算器工具', message: '帮我计算 123 + 456' },
+                { category: '计算器工具', message: '计算 (100 - 50) * 2' },
+                { category: '计算器工具', message: '2的10次方是多少？' },
+                { category: '数据库工具', message: '查询用户ID为1001的用户信息' },
+                { category: '数据库工具', message: '用户1003的账户余额是多少？' },
+                { category: '通用对话', message: '你好' },
+                { category: '通用对话', message: '给我讲个笑话' }
+            ];
+
+            const batchResponse = document.getElementById('batchResponse');
+            batchResponse.textContent = '开始批量测试...\n\n';
+            
+            let passed = 0;
+            let failed = 0;
+
+            for (let i = 0; i < testCases.length; i++) {
+                const testCase = testCases[i];
+                batchResponse.textContent += `[${i + 1}/${testCases.length}] [${testCase.category}] "${testCase.message}"\n`;
+                
+                try {
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message: testCase.message })
+                    });
+                    const data = await response.json();
+                    
+                    if (response.ok && data.response) {
+                        batchResponse.textContent += `    结果: 通过\n`;
+                        batchResponse.textContent += `    响应: ${data.response.substring(0, 80)}...\n\n`;
+                        passed++;
+                    } else {
+                        batchResponse.textContent += `    结果: 失败\n\n`;
+                        failed++;
+                    }
+                } catch (error) {
+                    batchResponse.textContent += `    结果: 错误 - ${error.message}\n\n`;
+                    failed++;
+                }
+                
+                batchResponse.scrollTop = batchResponse.scrollHeight;
+            }
+
+            batchResponse.textContent += `\n========== 测试完成 ==========\n`;
+            batchResponse.textContent += `总计: ${testCases.length} 个测试\n`;
+            batchResponse.textContent += `通过: ${passed} 个\n`;
+            batchResponse.textContent += `失败: ${failed} 个\n`;
+        }
+    </script>
+</body>
+</html>

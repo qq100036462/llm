@@ -1,0 +1,24 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: mcp-client
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-64a2c78c9be846dd9bbd3a1ebd89678d}
+      base-url: ${OPENAI_BASE_URL:https://api.deepseek.com}
+      chat:
+        options:
+          model: deepseek-chat
+    mcp:
+      client:
+        enabled: true
+        protocol: STATELESS
+        type: SYNC
+        toolcallback:
+          enabled: true
+        stateless:
+          connections:
+            mcp-server:
+              url: http://localhost:8080/api/mcp
